@@ -31,7 +31,7 @@ import scala.util.control.NonFatal
 
 import io.fabric8.kubernetes.api.model.{HasMetadata, OwnerReferenceBuilder, Pod, Service, ServiceBuilder}
 
-import io.fabric8.kubernetes.api.model.networking.v1beta1.{Ingress,IngressBuilder}
+import io.fabric8.kubernetes.api.model.networking.v1.{Ingress,IngressBuilder}
 import io.fabric8.kubernetes.client._
 import org.apache.commons.lang.StringUtils
 
@@ -555,7 +555,7 @@ private[utils] class LivyKubernetesClient(
     ) ++ additionalAnnotations
 
     val builder = new IngressBuilder()
-      .withApiVersion("networking/v1beta1")
+      .withApiVersion("networking/v1")
       .withNewMetadata()
       .withName(fixResourceName(s"${app.getApplicationPod.getMetadata.getName}-ui"))
       .withNamespace(app.getApplicationNamespace)
