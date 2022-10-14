@@ -30,8 +30,8 @@ import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 import io.fabric8.kubernetes.api.model.{HasMetadata, OwnerReferenceBuilder, Pod, Service, ServiceBuilder}
-import io.fabric8.kubernetes.api.model.network.{Ingress}
 import io.fabric8.kubernetes.api.model.extensions.{Ingress, IngressBuilder}
+import io.fabric8.kubernetes.api.model.networking.v1.ingress
 import io.fabric8.kubernetes.client._
 import org.apache.commons.lang.StringUtils
 
