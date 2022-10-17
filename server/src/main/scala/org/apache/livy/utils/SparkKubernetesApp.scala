@@ -327,7 +327,7 @@ private[utils] case class KubernetesAppReport(
     driver: Option[Pod],
     executors: Seq[Pod],
     appLog: IndexedSeq[String],
-    ingress: Option[Ingress],
+  #  ingress: Option[Ingress],
     livyConf: LivyConf) {
 
   import KubernetesConstants._
@@ -485,8 +485,9 @@ private[utils] class LivyKubernetesClient(
     val driver = pods.find(isDriver)
     val executors = pods.filter(isExecutor)
     val appLog = getApplicationLog(app, cacheLogSize)
-    val ingress = getIngress(app)
-    KubernetesAppReport(driver, executors, appLog, ingress, livyConf)
+    #val ingress = getIngress(app)
+    #KubernetesAppReport(driver, executors, appLog, ingress, livyConf)
+    KubernetesAppReport(driver, executors, appLog, livyConf)
   }
 
   private def getApplicationLog(
@@ -498,11 +499,11 @@ private[utils] class LivyKubernetesClient(
     ).getOrElse(IndexedSeq.empty)
   }
 
-  private def getIngress(app: KubernetesApplication): Option[Ingress] = {
-    client.network.ingress.inNamespace(app.getApplicationNamespace)
-      .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
-      .list()
-  }
+  #private def getIngress(app: KubernetesApplication): Option[Ingress] = {
+  #  client.network.ingress.inNamespace(app.getApplicationNamespace)
+  #    .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
+  #    .list.getItems.asScala.headOption
+  #}
 
   private def isDriver: Pod => Boolean = {
     _.getMetadata.getLabels.get(SPARK_ROLE_LABEL) == SPARK_ROLE_DRIVER
