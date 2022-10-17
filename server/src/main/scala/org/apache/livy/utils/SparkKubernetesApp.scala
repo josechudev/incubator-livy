@@ -498,7 +498,7 @@ private[utils] class LivyKubernetesClient(
     ).getOrElse(IndexedSeq.empty)
   }
 
-   private def getIngress(app: KubernetesApplication): Option[Ingress] = {
+   private def getIngress(app: KubernetesApplication): Option[io.fabric8.kubernetes.api.model.networking.v1.Ingress] = {
    client.network.ingress.inNamespace(app.getApplicationNamespace)
      .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
      .list.getItems.asScala.headOption
