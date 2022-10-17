@@ -498,10 +498,10 @@ private[utils] class LivyKubernetesClient(
     ).getOrElse(IndexedSeq.empty)
   }
 
-  private def getIngress(app: KubernetesApplication): Option[IngressList] = {
+  private def getIngress(app: KubernetesApplication): Option[Ingress] = {
     client.network.ingress.inNamespace(app.getApplicationNamespace)
       .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
-      .list.getItems.asScala.headOption
+      .list()
   }
 
   private def isDriver: Pod => Boolean = {
