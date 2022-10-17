@@ -31,7 +31,7 @@ import scala.util.control.NonFatal
 
 import io.fabric8.kubernetes.api.model.{HasMetadata, OwnerReferenceBuilder, Pod, Service, ServiceBuilder}
 
-import io.fabric8.kubernetes.api.model.networking.v1.{Ingress,IngressBuilder,IngressList}
+import io.fabric8.kubernetes.api.model.networking.v1.{Ingress,IngressBuilder}
 import io.fabric8.kubernetes.client._
 import org.apache.commons.lang.StringUtils
 
@@ -498,7 +498,7 @@ private[utils] class LivyKubernetesClient(
     ).getOrElse(IndexedSeq.empty)
   }
 
-  private def getIngress(app: KubernetesApplication): Option[IngressList] = {
+  private def getIngress(app: KubernetesApplication): Option[Ingress] = {
     client.network.ingress.inNamespace(app.getApplicationNamespace)
       .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
       .list()
