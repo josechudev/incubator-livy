@@ -30,8 +30,7 @@ import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 import io.fabric8.kubernetes.api.model.{HasMetadata, OwnerReferenceBuilder, Pod, Service, ServiceBuilder}
-
-import io.fabric8.kubernetes.api.model.networking.v1.{Ingress,IngressBuilder}
+import io.fabric8.kubernetes.api.model.networking.v1.{Ingress, IngressBackend, IngressBackendBuilder, IngressBuilder, IngressServiceBackend, ServiceBackendPort}
 import io.fabric8.kubernetes.client._
 import org.apache.commons.lang.StringUtils
 
@@ -498,11 +497,12 @@ private[utils] class LivyKubernetesClient(
     ).getOrElse(IndexedSeq.empty)
   }
 
-   private def getIngress(app: KubernetesApplication): Option[io.fabric8.kubernetes.api.model.networking.v1.Ingress] = {
-   client.network.ingress.inNamespace(app.getApplicationNamespace)
-     .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
-     .list.getItems.asScala.headOption
-   }
+   private def getIngress(app: KubernetesApplication):
+   Option[io.fabric8.kubernetes.api.model.networking.v1.Ingress] = {
+    client.inNamespace(app.getApplicationNamespace)
+          .network.ingress.withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
+          .asInstanceOf[Option[io.fabric8.kubernetes.api.model.networking.v1.Ingress]]
+  }
 
   private def isDriver: Pod => Boolean = {
     _.getMetadata.getLabels.get(SPARK_ROLE_LABEL) == SPARK_ROLE_DRIVER
@@ -554,6 +554,14 @@ private[utils] class LivyKubernetesClient(
         NGINX_CONFIG_SNIPPET.concat(additionalConfSnippet).format(appTag, appTag, appTag)
     ) ++ additionalAnnotations
 
+    var serviceBackendPort = new ServiceBackendPort();
+    serviceBackendPort.setName(service.getSpec.getPorts.get(0).getName);
+
+    var ingressServiceBackend =
+      new IngressServiceBackend(service.getMetadata.getName, serviceBackendPort)
+
+    var ingressBackend = new IngressBackendBuilder()
+        .withService(ingressServiceBackend).build();
     val builder = new IngressBuilder()
       .withApiVersion("networking/v1")
       .withNewMetadata()
@@ -569,10 +577,7 @@ private[utils] class LivyKubernetesClient(
       .withNewHttp()
       .addNewPath()
       .withPath(s"/$appTag/?(.*)")
-      .withNewBackend()
-      .withServiceName(service.getMetadata.getName)
-      .withNewServicePort(service.getSpec.getPorts.get(0).getName)
-      .endBackend()
+      .withBackend(ingressBackend)
       .endPath()
       .endHttp()
       .endRule()
