@@ -484,7 +484,10 @@ private[utils] class LivyKubernetesClient(
     val driver = pods.find(isDriver)
     val executors = pods.filter(isExecutor)
     val appLog = getApplicationLog(app, cacheLogSize)
-    val ingress = getIngress(app)
+    //val ingress = getIngress(app)
+    val ingress = client.network.v1.ingresses.inNamespace(app.getApplicationNamespace)
+        .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
+        .list.getItems.asScala.headOption
     KubernetesAppReport(driver, executors, appLog, ingress, livyConf)
   }
 
@@ -497,12 +500,21 @@ private[utils] class LivyKubernetesClient(
     ).getOrElse(IndexedSeq.empty)
   }
 
-   private def getIngress(app: KubernetesApplication):
-   Option[io.fabric8.kubernetes.api.model.networking.v1.Ingress] = {
-    client.inNamespace(app.getApplicationNamespace)
+  /* private def getIngress(app: KubernetesApplication):
+   io.fabric8.kubernetes.api.model.networking.v1.Ingress = {
+   /* client.inNamespace(app.getApplicationNamespace)
           .network.ingress.withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
           .asInstanceOf[Option[io.fabric8.kubernetes.api.model.networking.v1.Ingress]]
-  }
+  */
+   /* client.network.ingress.inNamespace(app.getApplicationNamespace)
+     .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
+     .list.getItems.asScala.headOption
+     .asInstanceOf[io.fabric8.kubernetes.api.model.networking.v1.Ingress] */
+
+      client.extensions.ingresses.inNamespace(app.getApplicationNamespace)
+      .withLabel(SPARK_APP_TAG_LABEL, app.getApplicationTag)
+      .list.getItems.asScala.headOption
+  } */
 
   private def isDriver: Pod => Boolean = {
     _.getMetadata.getLabels.get(SPARK_ROLE_LABEL) == SPARK_ROLE_DRIVER
